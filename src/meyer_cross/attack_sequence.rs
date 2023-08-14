@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use super::types::{Attack, Opening, Strike};
-use rand::seq::SliceRandom;
+use rand::{seq::SliceRandom, Rng};
 use thiserror::Error;
 
 pub type AttackSequence = Vec<Attack>;
@@ -46,6 +46,12 @@ impl AttackSequenceLength {
                 Self::MIN_LENGTH,
                 Self::MAX_LENGTH,
             ))
+        }
+    }
+
+    pub fn randomized() -> Self {
+        Self {
+            length: rand::thread_rng().gen_range(Self::MIN_LENGTH..=Self::MAX_LENGTH),
         }
     }
 }
