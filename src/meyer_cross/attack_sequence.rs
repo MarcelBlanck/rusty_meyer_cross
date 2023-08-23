@@ -54,6 +54,12 @@ impl AttackSequenceLength {
             length: rand::thread_rng().gen_range(Self::MIN_LENGTH..=Self::MAX_LENGTH),
         }
     }
+
+    pub fn randomized_range(min: Self, max: Self) -> Self {
+        Self {
+            length: rand::thread_rng().gen_range(min.into()..=max.into()),
+        }
+    }
 }
 
 const BASE_SEQUENCES: [[Opening; 4]; 4] = [
