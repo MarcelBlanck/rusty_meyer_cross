@@ -11,7 +11,10 @@ use meyer_cross::{
     preparation::StreichenCount,
     types::{Guard, Opening},
 };
-use resources::meyer_cross::{MeyerCross, Preparation};
+use resources::meyer_cross::{
+    MeyerCross, Preparation,
+    Preparation::{Static, Streichen},
+};
 
 use crate::meyer_cross::{attack_sequence::AttackSequenceLength, types::Strike};
 
@@ -21,8 +24,8 @@ fn main() {
         .add_plugins(MeyerUiPlugin)
         .insert_resource(ClearColor(Color::rgb(0.0, 0.0, 0.0)))
         .add_systems(Startup, setup)
-        .add_systems(Update, position_attack_indicators)
         .add_systems(Update, apply_ui_selections)
+        .add_systems(Update, position_attack_indicators)
         .run();
 }
 
@@ -53,78 +56,58 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>) {
 
 const DIST: f32 = 250.0;
 
-fn apply_ui_selections(mut meyer_cross: ResMut<MeyerCross>, mut ui_state: ResMut<UiState>) {
-    let length = AttackSequenceLength::randomized_range(
-        ui_state.attack_count_min,
-        ui_state.attack_count_max,
-    )
-    .expect("Attack Sequence Length out of bounds");
-
-    let mut prepatations = HashSet::new();
-
-    if ui_state.random_streichen {
-        prepatations.insert(Preparation::Streichen(StreichenCount::One));
-        prepatations.insert(Preparation::Streichen(StreichenCount::Two));
-        prepatations.insert(Preparation::Streichen(StreichenCount::Three));
-    } else if ui_state.streichen {
-        prepatations.insert(Preparation::Streichen(StreichenCount::Three));
+fn apply_ui_selections(mut meyer_cross: ResMut<MeyerCross>, mut ui: ResMut<UiState>) {
+    if ui.apply_pending {
+        ui.apply_pending = false;
+    } else {
+        return;
     }
 
-    if ui_state.tag_left {
-        prepatations.insert(Preparation::Static(Guard::TagLeft));
+    let mut preps = HashSet::new();
+    fn insert_prep(preps: &mut HashSet<Preparation>, prep: Preparation, cond: bool) {
+        if cond {
+            preps.insert(prep);
+        }
     }
-    if ui_state.tag_right {
-        prepatations.insert(Preparation::Static(Guard::TagRight));
+
+    if ui.random_streichen {
+        preps.insert(Streichen(StreichenCount::One));
+        preps.insert(Streichen(StreichenCount::Two));
+        preps.insert(Streichen(StreichenCount::Three));
+    } else if ui.streichen {
+        preps.insert(Streichen(StreichenCount::Three));
     }
-    if ui_state.tag_above {
-        prepatations.insert(Preparation::Static(Guard::TagAbove));
-    }
-    if ui_state.pflug_left {
-        prepatations.insert(Preparation::Static(Guard::PflugLeft));
-    }
-    if ui_state.pflug_right {
-        prepatations.insert(Preparation::Static(Guard::PflugRight));
-    }
-    if ui_state.ochs_left {
-        prepatations.insert(Preparation::Static(Guard::OchsLeft));
-    }
-    if ui_state.ochs_right {
-        prepatations.insert(Preparation::Static(Guard::OchsRight));
-    }
-    if ui_state.eisenport {
-        prepatations.insert(Preparation::Static(Guard::Eisenport));
-    }
-    if ui_state.langort {
-        prepatations.insert(Preparation::Static(Guard::Langort));
-    }
-    if ui_state.alber {
-        prepatations.insert(Preparation::Static(Guard::Alber));
-    }
+
+    insert_prep(&mut preps, Static(Guard::TagLeft), ui.tag_left);
+    insert_prep(&mut preps, Static(Guard::TagRight), ui.tag_right);
+    insert_prep(&mut preps, Static(Guard::TagAbove), ui.tag_above);
+    insert_prep(&mut preps, Static(Guard::PflugLeft), ui.pflug_left);
+    insert_prep(&mut preps, Static(Guard::PflugRight), ui.pflug_right);
+    insert_prep(&mut preps, Static(Guard::OchsLeft), ui.ochs_left);
+    insert_prep(&mut preps, Static(Guard::OchsRight), ui.ochs_right);
+    insert_prep(&mut preps, Static(Guard::Eisenport), ui.eisenport);
+    insert_prep(&mut preps, Static(Guard::Langort), ui.langort);
+    insert_prep(&mut preps, Static(Guard::Alber), ui.alber);
 
     let mut strikes = HashSet::new();
-    if ui_state.long_edge_allowed {
-        strikes.insert(Strike::Long);
-    }
-    if ui_state.short_edge_allowed {
-        strikes.insert(Strike::Short);
-    }
-    if ui_state.flat_allowed {
-        strikes.insert(Strike::Flat);
-    }
-    if ui_state.fehler_allowed {
-        strikes.insert(Strike::Fehler);
+    fn insert_strike(strikes: &mut HashSet<Strike>, strike: Strike, condition: bool) {
+        if condition {
+            strikes.insert(strike);
+        }
     }
 
-    if ui_state.apply_pending {
-        let _ = meyer_cross.randomize(
-            length,
-            &prepatations,
-            &strikes,
-            ui_state.doppelfehler_allowed,
-        );
+    insert_strike(&mut strikes, Strike::Long, ui.long_edge_allowed);
+    insert_strike(&mut strikes, Strike::Short, ui.short_edge_allowed);
+    insert_strike(&mut strikes, Strike::Flat, ui.flat_allowed);
+    insert_strike(&mut strikes, Strike::Fehler, ui.fehler_allowed);
 
-        ui_state.apply_pending = false;
-    }
+    let _ = meyer_cross.randomize(
+        AttackSequenceLength::randomized_range(ui.attack_count_min, ui.attack_count_max)
+            .expect("Attack Sequence Length out of bounds"),
+        &preps,
+        &strikes,
+        ui.doppelfehler_allowed,
+    );
 }
 
 fn position_attack_indicators(
