@@ -1,12 +1,6 @@
-use std::cmp;
-
 use bevy_egui::{egui, EguiContexts, EguiPlugin};
 
-use crate::meyer_cross::{
-    attack_sequence::AttackSequenceLength,
-    preparation::{Preparation, StreichenCount},
-    types::Strike,
-};
+use crate::meyer_cross::attack_sequence::AttackSequenceLength;
 
 use bevy::{app::Plugin, prelude::*};
 
@@ -89,7 +83,6 @@ macro_rules! setting_checkbox {
 
 fn update_ui(mut ui_state: ResMut<UiState>, mut contexts: EguiContexts) {
     let ctx = contexts.ctx_mut();
-    let mut apply = false;
     egui::Window::new("Meyer Cross Settings").show(ctx, |ui| {
         egui::Grid::new("preview").show(ui, |ui| {
             setting_checkbox!(ui, ui_state, "Streichen Preparation", streichen);

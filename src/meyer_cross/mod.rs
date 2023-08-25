@@ -10,7 +10,7 @@ use attack_sequence::{
     AttackSequenceError, AttackSequenceGenerator, AttackSequenceLength, GenerateAttackSequence,
 };
 use preparation::{Preparation, PreparationError, RandomizePreparation};
-use types::{Attack, Strike};
+use types::Strike;
 
 use self::{attack_sequence::AttackSequence, preparation::PreparationRandomizer};
 

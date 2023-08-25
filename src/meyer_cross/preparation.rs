@@ -50,9 +50,9 @@ impl RandomizePreparation for PreparationRandomizer {
     }
 }
 
-impl Into<usize> for StreichenCount {
-    fn into(self) -> usize {
-        match self {
+impl From<StreichenCount> for usize {
+    fn from(val: StreichenCount) -> Self {
+        match val {
             StreichenCount::One => 1,
             StreichenCount::Two => 2,
             StreichenCount::Three => 3,

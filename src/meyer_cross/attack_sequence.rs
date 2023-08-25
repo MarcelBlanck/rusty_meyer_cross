@@ -28,9 +28,9 @@ pub struct AttackSequenceLength {
     length: usize,
 }
 
-impl Into<usize> for AttackSequenceLength {
-    fn into(self) -> usize {
-        self.length
+impl From<AttackSequenceLength> for usize {
+    fn from(val: AttackSequenceLength) -> Self {
+        val.length
     }
 }
 
@@ -50,15 +50,11 @@ impl AttackSequenceLength {
     }
 
     pub fn randomized() -> Self {
-        Self {
-            length: rand::thread_rng().gen_range(Self::MIN_LENGTH..=Self::MAX_LENGTH),
-        }
+        Self::new(rand::thread_rng().gen_range(Self::MIN_LENGTH..=Self::MAX_LENGTH)).unwrap()
     }
 
-    pub fn randomized_range(min: Self, max: Self) -> Self {
-        Self {
-            length: rand::thread_rng().gen_range(min.into()..=max.into()),
-        }
+    pub fn randomized_range(min: usize, max: usize) -> Result<Self, AttackSequenceError> {
+        Self::new(rand::thread_rng().gen_range(min..=max))
     }
 }
 
