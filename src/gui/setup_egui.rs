@@ -37,8 +37,8 @@ pub struct UiState {
     pub attack_count_min: usize,
     pub attack_count_max: usize,
     pub timer_active: bool,
-    pub time_for_preparation_ms: usize,
-    pub time_per_strike_ms: usize,
+    pub time_for_preparation_s: usize,
+    pub time_per_strike_s: usize,
     pub apply_pending: bool,
 }
 
@@ -66,9 +66,9 @@ impl UiState {
             attack_count_min: 4,
             attack_count_max: 4,
             timer_active: false,
-            time_for_preparation_ms: 2000,
-            time_per_strike_ms: 2000,
-            apply_pending: false,
+            time_for_preparation_s: 6,
+            time_per_strike_s: 2,
+            apply_pending: true,
         }
     }
 }
@@ -145,12 +145,12 @@ fn update_ui(mut ui_state: ResMut<UiState>, mut contexts: EguiContexts) {
 
             if ui_state.timer_active {
                 ui.add(
-                    egui::Slider::new(&mut ui_state.attack_count_max, 1..=10)
+                    egui::Slider::new(&mut ui_state.time_for_preparation_s, 1..=10)
                         .text("Time for Preparation (sec)"),
                 );
                 ui.end_row();
                 ui.add(
-                    egui::Slider::new(&mut ui_state.attack_count_max, 1..=10)
+                    egui::Slider::new(&mut ui_state.time_per_strike_s, 1..=10)
                         .text("Time per Strike (sec)"),
                 );
                 ui.end_row();
